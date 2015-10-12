@@ -4,6 +4,7 @@ from datetime import datetime
 
 from ehb_datasources.drivers.redcap.driver import GenericDriver, ehbDriver
 from ehb_datasources.drivers.redcap.formBuilderJson import FormBuilderJson
+from ehb_datasources.api import app
 import json
 import xml.dom.minidom as xml
 
@@ -16,6 +17,48 @@ class RequestResources(object):
     isSecure = True
     regular_token = '8E66DB6844D58E990075AFB51658A002'
     token = "1387872621BBF1C17CC47FD8AE25FF54"
+
+
+class TestApi(unittest.TestCase, RequestResources):
+    def setUp(self):
+        self.app = app.app.test_client()
+        self.regular_config = '''{
+            "form_names":["demographics", "testing", "imaging"]
+        }'''
+        self.external_record = {
+            'id': 1,
+            'subject': 1,
+            'external_system': 1,
+            'record_id': '100001',
+            'path': 'test_path',
+            'label_id': 1,
+            'created': 'January 01, 2000 00:00:00',
+            'modified': 'January 02, 2000 00:00:00'
+        }
+
+    def test_record_select_form(self):
+        record_urls = ['some_url']
+        labels = [{'id': '1', 'label': 'Some label'}]
+        data = {
+            'url': 'https://redcap.vanderbilt.edu/api/',
+            'password': '8E66DB6844D58E990075AFB51658A002',
+            'secure': True,
+            'protocol_configuration': self.regular_config,
+            'record_urls': record_urls,
+            'records': [self.external_record],
+            'labels': labels,
+
+        }
+        fixture = open(os.path.join(
+            os.path.dirname(__file__),
+            'fixtures/record_list.html'), 'r').read()
+        rv = self.app.post(
+            '/redcap/record_list_form',
+            data=json.dumps(data),
+            content_type='application/json')
+        f = json.loads(rv.data)["form"]
+
+        self.assertEqual(fixture.strip(), f.strip())
 
 
 class TestDriver(unittest.TestCase, RequestResources):
@@ -52,6 +95,16 @@ class TestDriver(unittest.TestCase, RequestResources):
             },
             "record_id_field_name": "study_id"
         }'''
+        self.external_record = {
+            'id': 1,
+            'subject': 1,
+            'external_system': 1,
+            'record_id': '100001',
+            'path': 'test_path',
+            'label_id': 1,
+            'created': 'January 01, 2000 00:00:00',
+            'modified': 'January 02, 2000 00:00:00'
+        }
 
     def test_configure_regular(self):
         self.assertEqual(self.driver.form_names, None)
@@ -116,17 +169,12 @@ class TestDriver(unittest.TestCase, RequestResources):
     def test_record_select_form(self):
         record_urls = ['some_url']
         labels = [{'id': '1', 'label': 'Some label'}]
-        er = Mock()
-        er.id = '1'
-        er.record_label = '1'
-        er.created = datetime(2000, 1, 1)
-        er.modified = datetime(2000, 1, 2)
-        records = [er]
+        records = [self.external_record]
         fixture = open(os.path.join(
             os.path.dirname(__file__),
             'fixtures/record_list.html'), 'r').read()
 
-        html = self.driver.recordListForm(None, record_urls, records, labels)
+        html = self.driver.recordListForm(record_urls, records, labels)
         self.assertEqual(fixture.strip(), html.strip())
 
 if __name__ == '__main__':
