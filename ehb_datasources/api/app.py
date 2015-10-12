@@ -16,7 +16,7 @@ class Driver(object):
     This object handles the representation of a Driver in the initial API index.
     '''
     def __init__(self, name):
-	self.name = name
+        self.name = name
 
 
 api.add_resource(Redcap, '/redcap', '/redcap/<form_type>', endpoint='redcap')
@@ -35,13 +35,13 @@ class Index(Resource):
     endpoint.
     '''
     def get(self):
-	ix = OrderedDict()
-	ix['name'] = 'ehb_datasources'
-	ix['drivers'] = [
-	    marshal(redcap_driver, redcap_fields),
-	]
-	ix['version'] = get_version()
-	return ix
+        ix = OrderedDict()
+        ix['name'] = 'ehb_datasources'
+        ix['drivers'] = [
+            marshal(redcap_driver, redcap_fields),
+        ]
+        ix['version'] = get_version()
+        return ix
 
 api.add_resource(Index, '/')
 
