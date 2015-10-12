@@ -963,7 +963,7 @@ class ehbDriver(Driver, GenericDriver):
             return ['Parse error. REDCap response is an unknown format.' +
                     ' Please contact system administrator.']
 
-    def recordListForm(self, request, record_urls, records, labels,
+    def recordListForm(self, record_urls, records, labels,
                        *args, **kwargs):
 
         tpl = open(
@@ -978,8 +978,8 @@ class ehbDriver(Driver, GenericDriver):
             r_lbl = 'Record'
             for label in labels:
                 if (
-                    record.label_id == str(label['id']) and
-                    record.label_id != '1'
+                    record['label_id'] == str(label['id']) and
+                    record['label_id'] != '1'
                 ):
                     r_lbl = label['label']
             rows += ('<tr><td><a href="{url}"><span id="{id}_label">{label}' +
@@ -989,9 +989,9 @@ class ehbDriver(Driver, GenericDriver):
                      '<td>{created}</td><td>{modified}</td></tr>').format(
                 url=url,
                 label=r_lbl,
-                id=record.id,
-                created=record.created.strftime('%B %d, %Y %H:%M:%S'),
-                modified=record.modified.strftime('%B %d, %Y %H:%M:%S')
+                id=record['id'],
+                created=record['created'],
+                modified=record['modified']
             )
 
         return ('<table class="table table-bordered table-striped"><thead>' +
